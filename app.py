@@ -27,16 +27,29 @@ def download():
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
-        'format': 'best',
+        'format': 'bestvideo+bestaudio/best',
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9',
+        },
         'extractor_args': {
             'youtube': {
-                'player_client': ['android_embedded', 'android', 'ios'],
-                'skip': ['hls', 'dash']
+                'player_client': ['ios', 'android']
             }
         }
     }
 
-    if quality == 'mp3':
+    # Connect existing cookies file
+    if os.path.exists('cookies.txt'):
+        ydl_opts['cookiefile'] = 'cookies.txt'
+
+    if quality == '1080p':
+        ydl_opts['format'] = 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best'
+    elif quality == '720p':
+        ydl_opts['format'] = 'bestvideo[height<=720]+bestaudio/best[height<=720]/best'
+    elif quality == '360p':
+        ydl_opts['format'] = 'bestvideo[height<=360]+bestaudio/best[height<=360]/best'
+    elif quality == 'mp3':
         ydl_opts['format'] = 'bestaudio/best'
         ydl_opts['postprocessors'] = [{
             'key': 'FFmpegExtractAudio',
