@@ -23,16 +23,28 @@ def download():
     if not url:
         return jsonify({'error': 'ইউটিউব লিংক প্রদান করুন'}), 400
 
+    # Universal Fallback Format Specs
+    if quality == '1080p':
+        fmt = 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/b/best'
+    elif quality == '720p':
+        fmt = 'bestvideo[height<=720]+bestaudio/best[height<=720]/b/best'
+    elif quality == '360p':
+        fmt = 'bestvideo[height<=360]+bestaudio/best[height<=360]/b/best'
+    elif quality == 'mp3':
+        fmt = 'bestaudio/b/best'
+    else:
+        fmt = 'b/best'
+
     ydl_opts = {
         'outtmpl': os.path.join(DOWNLOAD_DIR, '%(title).50s.%(ext)s'),
         'quiet': True,
         'no_warnings': True,
         'concurrent_fragment_downloads': 8,
         'nocheckcertificate': True,
-        'format': 'bestvideo+bestaudio/best',
+        'format': fmt,
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'web', 'mweb']
+                'player_client': ['android', 'ios', 'web']
             }
         }
     }
@@ -40,14 +52,7 @@ def download():
     if os.path.exists('cookies.txt'):
         ydl_opts['cookiefile'] = 'cookies.txt'
 
-    if quality == '1080p':
-        ydl_opts['format'] = 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best'
-    elif quality == '720p':
-        ydl_opts['format'] = 'bestvideo[height<=720]+bestaudio/best[height<=720]/best'
-    elif quality == '360p':
-        ydl_opts['format'] = 'bestvideo[height<=360]+bestaudio/best[height<=360]/best'
-    elif quality == 'mp3':
-        ydl_opts['format'] = 'bestaudio/best'
+    if quality == 'mp3':
         ydl_opts['postprocessors'] = [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
