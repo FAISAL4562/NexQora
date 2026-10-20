@@ -30,15 +30,14 @@ def download():
         'format': 'best',
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'ios', 'web']
+                'player_client': ['android_embedded', 'android', 'ios'],
+                'skip': ['hls', 'dash']
             }
         }
     }
 
-    if os.path.exists('cookies.txt'):
-        ydl_opts['cookiefile'] = 'cookies.txt'
-
     if quality == 'mp3':
+        ydl_opts['format'] = 'bestaudio/best'
         ydl_opts['postprocessors'] = [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
