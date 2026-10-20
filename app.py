@@ -18,23 +18,23 @@ def download():
     quality = data.get('quality', '720p')
 
     if not url:
-        return jsonify({'error': 'ইউটিউব লিংক প্রদান করুন'}), 400
+        return jsonify({'error': 'youtube link provider korun'}), 400
 
-    # Copy cookies to /tmp for Serverless read-write permission
     cookie_path = None
     if os.path.exists('cookies.txt'):
         cookie_path = os.path.join(DOWNLOAD_DIR, 'cookies.txt')
         shutil.copy('cookies.txt', cookie_path)
 
+    # Vercel er jonno single combined format (No FFmpeg needed)
     ydl_opts = {
         'outtmpl': os.path.join(DOWNLOAD_DIR, '%(title).50s.%(ext)s'),
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
-        'format': 'best',
+        'format': 'b',
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'ios', 'web']
+                'player_client': ['android', 'web']
             }
         }
     }
@@ -48,6 +48,6 @@ def download():
             filename = ydl.prepare_filename(info)
             return send_file(filename, as_attachment=True)
     except Exception as e:
-        return jsonify({'error': f'ডাউনলোড ব্যাহত হয়েছে: {str(e)}'}), 500
+        return jsonify({'error': f'download bahato hoyeche: {str(e)}'}), 500
 
 app = app
