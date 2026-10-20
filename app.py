@@ -26,7 +26,7 @@ def download():
         'concurrent_fragment_downloads': 8,
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'web']
+                'player_client': ['ios', 'mweb', 'android']
             }
         }
     }
