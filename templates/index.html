@@ -21,16 +21,15 @@
 
 <div class="container">
     <h2>Ultra Fast Downloader</h2>
-    <input type="text" id="videoUrl" placeholder="ইউটিউব ভিডিও লিংক পেস্ট করুন">
+    <input type="text" id="videoUrl" placeholder="YouTube video link paste korun">
     
     <select id="quality">
-        <option value="720p">720p (HD Fast)</option>
-        <option value="1080p">1080p (Full HD)</option>
-        <option value="360p">360p (Low Quality)</option>
-        <option value="mp3">MP3 Audio</option>
+        <option value="720">720p (HD)</option>
+        <option value="1080">1080p (Full HD)</option>
+        <option value="360">360p (SD)</option>
     </select>
 
-    <button onclick="startDownload()">অতি দ্রুত ডাউনলোড করুন</button>
+    <button onclick="startDownload()">Oti Druto Download Korun</button>
 
     <div id="status"></div>
 </div>
@@ -38,38 +37,44 @@
 <script>
 async function startDownload() {
     const url = document.getElementById('videoUrl').value;
-    const quality = document.getElementById('quality').value;
     const statusDiv = document.getElementById('status');
 
     if (!url) {
         statusDiv.className = 'error';
-        statusDiv.innerText = 'অনুগ্রহ করে লিংক প্রদান করুন!';
+        statusDiv.innerText = 'Onugroho kore link provadan korun!';
         return;
     }
 
     statusDiv.className = '';
-    statusDiv.innerText = 'প্রসেসিং হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...';
+    statusDiv.innerText = 'Processing hocche, ektu opekkha korun...';
 
     try {
-        const response = await fetch('/download', {
+        const response = await fetch('https://co.wuk.sh/api/json', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url, quality })
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ url: url })
         });
 
         const data = await response.json();
 
-        if (data.download_url) {
+        if (data.url) {
             statusDiv.className = 'success';
-            statusDiv.innerHTML = `<a href="${data.download_url}" target="_blank" style="color: #38bdf8; font-weight: bold; text-decoration: underline;">এখানে ক্লিক করে সরাসরি ডাউনলোড করুন</a>`;
-            window.location.href = data.download_url;
+            statusDiv.innerHTML = `<a href="${data.url}" target="_blank" style="color: #38bdf8; font-weight: bold; text-decoration: underline;">Ekhane click kore direct download korun</a>`;
+            window.location.href = data.url;
+        } else if (data.picker && data.picker.length > 0) {
+            statusDiv.className = 'success';
+            statusDiv.innerHTML = `<a href="${data.picker[0].url}" target="_blank" style="color: #38bdf8; font-weight: bold; text-decoration: underline;">Ekhane click kore direct download korun</a>`;
+            window.location.href = data.picker[0].url;
         } else {
             statusDiv.className = 'error';
-            statusDiv.innerText = data.error || 'ডাউনলোড ব্যর্থ হয়েছে!';
+            statusDiv.innerText = 'Link generate kora sombhob hoyni. Onno link try korun.';
         }
     } catch (err) {
         statusDiv.className = 'error';
-        statusDiv.innerText = 'সার্ভার সমস্যা! আবার চেষ্টা করুন।';
+        statusDiv.innerText = 'Network ba API connection e somoshya hocche. Onno link try korun.';
     }
 }
 </script>
