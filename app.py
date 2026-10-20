@@ -4,7 +4,6 @@ import os
 import tempfile
 import static_ffmpeg
 
-# Automatic Static FFmpeg Setup
 static_ffmpeg.add_paths()
 
 app = Flask(__name__)
@@ -23,25 +22,12 @@ def download():
     if not url:
         return jsonify({'error': 'ইউটিউব লিংক প্রদান করুন'}), 400
 
-    # Universal Fallback Format Specs
-    if quality == '1080p':
-        fmt = 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/b/best'
-    elif quality == '720p':
-        fmt = 'bestvideo[height<=720]+bestaudio/best[height<=720]/b/best'
-    elif quality == '360p':
-        fmt = 'bestvideo[height<=360]+bestaudio/best[height<=360]/b/best'
-    elif quality == 'mp3':
-        fmt = 'bestaudio/b/best'
-    else:
-        fmt = 'b/best'
-
     ydl_opts = {
         'outtmpl': os.path.join(DOWNLOAD_DIR, '%(title).50s.%(ext)s'),
         'quiet': True,
         'no_warnings': True,
-        'concurrent_fragment_downloads': 8,
         'nocheckcertificate': True,
-        'format': fmt,
+        'format': 'best',
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'ios', 'web']
