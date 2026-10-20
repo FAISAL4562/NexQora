@@ -1,7 +1,11 @@
-from flask import Flask, render_template, request, jsonify
-import requests
+from flask import Flask, render_template, request, send_file, jsonify
+import yt_dlp
+import os
+import shutil
+import tempfile
 
 app = Flask(__name__)
+DOWNLOAD_DIR = tempfile.gettempdir()
 
 @app.route('/')
 def home():
@@ -14,37 +18,55 @@ def download():
     quality = data.get('quality', '720p')
 
     if not url:
-        return jsonify({'error': 'ইউটিউব লিংক প্রদান করুন'}), 400
+        return jsonify({'error': 'YouTube link din'}), 400
 
-    try:
-        # Using a reliable alternative working API
-        api_url = "https://yt-api.p.rapidapi.com/dl" # or use another public instance
-        # Let's use Cobalt's new endpoint or a direct working downloader instance
-        alt_api = "https://co.wuk.sh/api/json"
-        
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0"
+    cookie_path = None
+    if os.path.exists('cookies.txt'):
+        cookie_path = os.path.join(DOWNLOAD_DIR, 'cookies.txt')
+        try:
+            shutil.copy('cookies.txt', cookie_path)
+        except:
+            pass
+
+    # Automatic Fallback Strategies (Ekta fail korle automatic onnote chole jabe)
+    strategies = [
+        {
+            'format': 'best[ext=mp4]/best',
+            'extractor_args': {'youtube': {'player_client': ['android']}}
+        },
+        {
+            'format': 'b',
+            'extractor_args': {'youtube': {'player_client': ['web']}}
+        },
+        {
+            'format': 'best',
+            'extractor_args': {'youtube': {'player_client': ['mweb', 'ios']}}
         }
-        
-        payload = {
-            "url": url,
-            "vQuality": quality.replace('p', ''),
-            "isAudioOnly": True if quality == "mp3" else False
+    ]
+
+    last_error = None
+    for strat in strategies:
+        ydl_opts = {
+            'outtmpl': os.path.join(DOWNLOAD_DIR, '%(title).50s.%(ext)s'),
+            'quiet': True,
+            'no_warnings': True,
+            'nocheckcertificate': True,
+            'format': strat['format'],
+            'extractor_args': strat['extractor_args']
         }
 
-        response = requests.post(alt_api, json=payload, headers=headers, timeout=15)
-        res_data = response.json()
+        if cookie_path and os.path.exists(cookie_path):
+            ydl_opts['cookiefile'] = cookie_path
 
-        if "url" in res_data:
-            return jsonify({'download_url': res_data["url"]})
-        elif "picker" in res_data and len(res_data["picker"]) > 0:
-            return jsonify({'download_url': res_data["picker"][0]["url"]})
-        else:
-            return jsonify({'error': 'লিংক প্রসেস করা যায়নি, অন্য ভিডিও চেষ্টা করুন।'}), 400
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                filename = ydl.prepare_filename(info)
+                return send_file(filename, as_attachment=True)
+        except Exception as e:
+                last_error = str(e)
+                continue  # Automatic next strategy-te chole jabe
 
-    except Exception as e:
-        return jsonify({'error': f'সার্ভার সংযোগে সমস্যা: {str(e)}'}), 500
+    return jsonify({'error': f'Sob method try koreodownload kora jayni: {last_error}'}), 500
 
 app = app
