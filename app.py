@@ -24,12 +24,16 @@ def download():
         'quiet': True,
         'no_warnings': True,
         'concurrent_fragment_downloads': 8,
+        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'extractor_args': {
             'youtube': {
-                'player_client': ['ios', 'mweb', 'android']
+                'player_client': ['tv', 'mweb', 'android', 'web']
             }
         }
     }
+
+    if os.path.exists('cookies.txt'):
+        ydl_opts['cookiefile'] = 'cookies.txt'
 
     if quality == '1080p':
         ydl_opts['format'] = 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
