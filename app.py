@@ -1,11 +1,21 @@
-from flask import Flask, render_template, request, send_file, jsonify
-import yt_dlp
-import os
-import shutil
-import tempfile
+from flask import Flask, render_template, request, jsonify
+import requests
+import re
 
 app = Flask(__name__)
-DOWNLOAD_DIR = tempfile.gettempdir()
+
+def extract_video_id(url):
+    patterns = [
+        r'(?:v=|\/)([0-9A-Za-z_-]{11}).*',
+        r'(?:embed\/)([0-9A-Za-z_-]{11})',
+        r'(?:watch\?v=)([0-9A-Za-z_-]{11})',
+        r'(?:youtu\.be\/)([0-9A-Za-z_-]{11})'
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+    return None
 
 @app.route('/')
 def home():
@@ -15,58 +25,33 @@ def home():
 def download():
     data = request.json or {}
     url = data.get('url')
-    quality = data.get('quality', '720p')
-
+    
     if not url:
         return jsonify({'error': 'YouTube link din'}), 400
 
-    cookie_path = None
-    if os.path.exists('cookies.txt'):
-        cookie_path = os.path.join(DOWNLOAD_DIR, 'cookies.txt')
-        try:
-            shutil.copy('cookies.txt', cookie_path)
-        except:
-            pass
+    video_id = extract_video_id(url)
+    if not video_id:
+        return jsonify({'error': 'Sothik YouTube link din'}), 400
 
-    # Automatic Fallback Strategies (Ekta fail korle automatic onnote chole jabe)
-    strategies = [
-        {
-            'format': 'best[ext=mp4]/best',
-            'extractor_args': {'youtube': {'player_client': ['android']}}
-        },
-        {
-            'format': 'b',
-            'extractor_args': {'youtube': {'player_client': ['web']}}
-        },
-        {
-            'format': 'best',
-            'extractor_args': {'youtube': {'player_client': ['mweb', 'ios']}}
-        }
-    ]
+    try:
+        # Piped API use kore YouTube IP block bypass korchi
+        piped_url = f"https://pipedapi.kavin.rocks/streams/{video_id}"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        res = requests.get(piped_url, headers=headers, timeout=12)
+        
+        if res.status_code != 200:
+            return jsonify({'error': 'API theke data ana jayni, abar chesta korun'}), 500
+            
+        res_data = res.json()
+        streams = res_data.get('videoStreams', [])
+        
+        if streams:
+            download_url = streams[0]['url']
+            return jsonify({'download_url': download_url})
+        else:
+            return jsonify({'error': 'Video stream pawa jayni'}), 400
 
-    last_error = None
-    for strat in strategies:
-        ydl_opts = {
-            'outtmpl': os.path.join(DOWNLOAD_DIR, '%(title).50s.%(ext)s'),
-            'quiet': True,
-            'no_warnings': True,
-            'nocheckcertificate': True,
-            'format': strat['format'],
-            'extractor_args': strat['extractor_args']
-        }
-
-        if cookie_path and os.path.exists(cookie_path):
-            ydl_opts['cookiefile'] = cookie_path
-
-        try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(url, download=True)
-                filename = ydl.prepare_filename(info)
-                return send_file(filename, as_attachment=True)
-        except Exception as e:
-                last_error = str(e)
-                continue  # Automatic next strategy-te chole jabe
-
-    return jsonify({'error': f'Sob method try koreodownload kora jayni: {last_error}'}), 500
+    except Exception as e:
+        return jsonify({'error': f'Server connection error: {str(e)}'}), 500
 
 app = app
