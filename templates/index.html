@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>হাই-স্পিড ইউটিউব ডাউনলোডার</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #ff0050;
+            --accent-hover: #e00043;
+            --text: #f8fafc;
+            --subtext: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+        }
+
+        * { box-sizing: border-box; transition: all 0.25s ease; }
+
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 520px;
+            background: var(--card-bg);
+            padding: 35px 25px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .header-icon {
+            font-size: 48px;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+        }
+
+        p.subtitle {
+            color: var(--subtext);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .input-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .input-box input:focus {
+            border-color: var(--accent);
+        }
+
+        .input-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--subtext);
+        }
+
+        .select-box {
+            margin-bottom: 20px;
+        }
+
+        .select-box select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text);
+            font-size: 15px;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-download {
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: inherit;
+            box-shadow: 0 6px 20px rgba(255, 0, 80, 0.35);
+        }
+
+        .btn-download:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 0, 80, 0.5);
+        }
+
+        .btn-download:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status-card {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-card.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(255, 0, 80, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(255, 0, 80, 0.2);
+        }
+
+        .status-card.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <i class="fa-brands fa-youtube header-icon"></i>
+        <h1>Ultra Fast Downloader</h1>
+        <p class="subtitle">হাই-স্পিডে এইচডি ভিডিও এবং এমপি৩ অডিও ডাউনলোড করুন</p>
+
+        <div class="input-box">
+            <i class="fa-solid fa-link"></i>
+            <input type="text" id="videoUrl" placeholder="ইউটিউব ভিডিওর লিংক এখানে পেস্ট করুন...">
+        </div>
+
+        <div class="select-box">
+            <select id="qualitySelect">
+                <option value="720p">⚡ 720p (HD Fast)</option>
+                <option value="1080p">🎬 1080p (Full HD)</option>
+                <option value="360p">📱 360p (Low Data)</option>
+                <option value="mp3">🎵 MP3 Audio (High Quality)</option>
+            </select>
+        </div>
+
+        <button id="downloadBtn" class="btn-download" onclick="processDownload()">
+            <i class="fa-solid fa-bolt"></i> অতি দ্রুত ডাউনলোড করুন
+        </button>
+
+        <div id="statusCard" class="status-card"></div>
+    </div>
+
+    <script>
+        async function processDownload() {
+            const urlInput = document.getElementById('videoUrl');
+            const qualitySelect = document.getElementById('qualitySelect');
+            const statusCard = document.getElementById('statusCard');
+            const btn = document.getElementById('downloadBtn');
+
+            const url = urlInput.value.trim();
+            const quality = qualitySelect.value;
+
+            if (!url) {
+                showStatus('<i class="fa-solid fa-triangle-exclamation"></i> অনুগ্রহ করে লিংক দিন!', 'active');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> প্রসেসিং হচ্ছে...';
+            showStatus('<i class="fa-solid fa-spinner fa-spin"></i> ভিডিও হাই-স্পিডে প্রসেস ও ডাউনলোড করা হচ্ছে...', 'active');
+
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url, quality })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `video_${Date.now()}.${quality === 'mp3' ? 'mp3' : 'mp4'}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    
+                    showStatus('<i class="fa-solid fa-circle-check"></i> ডাউনলোড সফলভাবে সম্পন্ন হয়েছে!', 'success');
+                } else {
+                    const err = await response.json();
+                    showStatus('<i class="fa-solid fa-circle-xmark"></i> ' + (err.error || 'ডাউনলোড ব্যর্থ হয়েছে'), 'active');
+                }
+            } catch (e) {
+                showStatus('<i class="fa-solid fa-wifi"></i> সংযোগ ত্রুটি! আবার চেষ্টা করুন।', 'active');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-bolt"></i> অতি দ্রুত ডাউনলোড করুন';
+            }
+        }
+
+        function showStatus(htmlContent, type) {
+            const statusCard = document.getElementById('statusCard');
+            statusCard.innerHTML = htmlContent;
+            statusCard.className = `status-card active ${type === 'success' ? 'success' : ''}`;
+        }
+    </script>
+
+</body>
+</html>
+
