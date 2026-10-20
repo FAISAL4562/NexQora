@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, send_file, jsonify
 import yt_dlp
 import os
+import shutil
 import tempfile
 
 app = Flask(__name__)
@@ -19,6 +20,12 @@ def download():
     if not url:
         return jsonify({'error': 'ইউটিউব লিংক প্রদান করুন'}), 400
 
+    # Copy cookies to /tmp for Serverless read-write permission
+    cookie_path = None
+    if os.path.exists('cookies.txt'):
+        cookie_path = os.path.join(DOWNLOAD_DIR, 'cookies.txt')
+        shutil.copy('cookies.txt', cookie_path)
+
     ydl_opts = {
         'outtmpl': os.path.join(DOWNLOAD_DIR, '%(title).50s.%(ext)s'),
         'quiet': True,
@@ -32,8 +39,8 @@ def download():
         }
     }
 
-    if os.path.exists('cookies.txt'):
-        ydl_opts['cookiefile'] = 'cookies.txt'
+    if cookie_path and os.path.exists(cookie_path):
+        ydl_opts['cookiefile'] = cookie_path
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -43,5 +50,4 @@ def download():
     except Exception as e:
         return jsonify({'error': f'ডাউনলোড ব্যাহত হয়েছে: {str(e)}'}), 500
 
-# Vercel needs this application object
 app = app
