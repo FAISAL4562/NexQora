@@ -2,6 +2,10 @@ from flask import Flask, render_template, request, send_file, jsonify
 import yt_dlp
 import os
 import tempfile
+import static_ffmpeg
+
+# Automatic Static FFmpeg Setup
+static_ffmpeg.add_paths()
 
 app = Flask(__name__)
 DOWNLOAD_DIR = tempfile.gettempdir()
@@ -25,7 +29,7 @@ def download():
         'no_warnings': True,
         'concurrent_fragment_downloads': 8,
         'nocheckcertificate': True,
-        'format': 'best',
+        'format': 'bestvideo+bestaudio/best',
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'web', 'mweb']
@@ -36,7 +40,13 @@ def download():
     if os.path.exists('cookies.txt'):
         ydl_opts['cookiefile'] = 'cookies.txt'
 
-    if quality == 'mp3':
+    if quality == '1080p':
+        ydl_opts['format'] = 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best'
+    elif quality == '720p':
+        ydl_opts['format'] = 'bestvideo[height<=720]+bestaudio/best[height<=720]/best'
+    elif quality == '360p':
+        ydl_opts['format'] = 'bestvideo[height<=360]+bestaudio/best[height<=360]/best'
+    elif quality == 'mp3':
         ydl_opts['format'] = 'bestaudio/best'
         ydl_opts['postprocessors'] = [{
             'key': 'FFmpegExtractAudio',
