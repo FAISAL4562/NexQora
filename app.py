@@ -24,6 +24,11 @@ def download():
         'quiet': True,
         'no_warnings': True,
         'concurrent_fragment_downloads': 8,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'web']
+            }
+        }
     }
 
     if quality == '1080p':
@@ -55,4 +60,3 @@ def download():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
-
